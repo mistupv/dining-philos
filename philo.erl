@@ -6,8 +6,8 @@
 start(WaiterPid) ->
   WaiterPid ! {intro, self()},
   receive
-    {seated, PhiloId} ->
-      io:fwrite("Philo " ++ integer_to_list(PhiloId) ++ " has been seated~n")
+    {seated, PhiloId} -> ok
+      %io:fwrite("Philo " ++ integer_to_list(PhiloId) ++ " has been seated~n")
   end,
   loop(WaiterPid, PhiloId, 0).
 
@@ -17,12 +17,12 @@ loop(WaiterPid, PhiloId, NumEaten) ->
   loop(WaiterPid, PhiloId, NumEaten + HasEaten).
 
 think(PhiloId) ->
-  io:fwrite("Philo " ++ integer_to_list(PhiloId) ++ " is thinking~n"),
+  %io:fwrite("Philo " ++ integer_to_list(PhiloId) ++ " is thinking~n"),
   ThinkTime = rand:uniform(?THINK_FACTOR),
   timer:sleep(ThinkTime).
 
 hungry(WaiterPid, PhiloId, NumEaten) ->
-  io:fwrite("Philo " ++ integer_to_list(PhiloId) ++ " is hungry~n"),
+  %io:fwrite("Philo " ++ integer_to_list(PhiloId) ++ " is hungry~n"),
   WaiterPid ! {hungry, self()},
   receive
     think ->
@@ -32,10 +32,10 @@ hungry(WaiterPid, PhiloId, NumEaten) ->
       WaiterPid ! {eaten, self()},
       1;
     close ->
-      io:fwrite("Philo " ++ integer_to_list(PhiloId) ++ " leaves, has eaten ~p times~n", [NumEaten]),
+      io:fwrite("Philo " ++ integer_to_list(PhiloId) ++ " has eaten ~p times~n", [NumEaten]),
       exit(normal)
   end.
 
 eat(PhiloId) ->
-  timer:sleep(?EATING_TIME),
-  io:fwrite("Philo " ++ integer_to_list(PhiloId) ++ " has eaten~n").
+  timer:sleep(?EATING_TIME).
+  % io:fwrite("Philo " ++ integer_to_list(PhiloId) ++ " has eaten~n").
