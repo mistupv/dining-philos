@@ -5,6 +5,8 @@
 
 main() ->
   Self = self(),
+  {ok, Log} = file:open(?FILE_NAME, [write]),
+  erlang:group_leader(Log, Self),
   WaiterPid = spawn(waiter, start, [?NUM_FORKS, Self]),
   receive
     table_prepared -> ok

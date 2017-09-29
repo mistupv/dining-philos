@@ -4,3 +4,4 @@
 -define(THINK_FACTOR, 1000).
 -define(EATING_TIME, 1000).
 -define(RUNNING_TIME, 10000).
+-define(FILE_NAME, "dining_log.txt").
