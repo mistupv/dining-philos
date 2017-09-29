@@ -12,6 +12,7 @@ start(NumForks, DiningPid) ->
   loop(ForkDict, PhiloDict).
 
 loop(ForkDict, PhiloDict) ->
+  check_close(PhiloDict),
   {UpdForkDict, UpdPhiloDict} =
     receive
       {intro, PhiloPid} ->
@@ -63,6 +64,16 @@ put_down_forks(PhiloPid, ForkDict, PhiloDict) ->
   NewForkDict = lists:keyreplace(RightForkId, 1, TmpForkDict, {RightForkId, free}),
   NewForkDict.
 
+check_close(PhiloDict) ->
+  receive
+    close ->
+      [Pid ! close || {Pid, _} <- PhiloDict],
+      ref_stop(),
+      exit(normal)
+  after
+    0 -> ok
+  end.
+
 ref_add(Id, Ref) ->
     ets:insert(?DIN_REF, {Id, Ref}).
 
@@ -73,5 +84,5 @@ ref_start() ->
     ?DIN_REF = ets:new(?DIN_REF, [set, public, named_table]),
     ok.
 
-% ref_stop() ->
-%     ets:delete(?DIN_REF).
+ref_stop() ->
+    ets:delete(?DIN_REF).

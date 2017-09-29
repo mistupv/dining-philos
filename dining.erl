@@ -9,4 +9,6 @@ main() ->
   receive
     table_prepared -> ok
   end,
-  [spawn(philo, start, [WaiterPid]) || _ <- lists:seq(1, ?NUM_FORKS)].
+  [spawn(philo, start, [WaiterPid]) || _ <- lists:seq(1, ?NUM_FORKS)],
+  timer:sleep(?RUNNING_TIME),
+  WaiterPid ! close.

@@ -3,3 +3,4 @@
 -define(CUR_SEAT, 0).
 -define(THINK_FACTOR, 1000).
 -define(EATING_TIME, 1000).
+-define(RUNNING_TIME, 10000).

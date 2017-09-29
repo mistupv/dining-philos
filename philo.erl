@@ -29,7 +29,10 @@ hungry(WaiterPid, PhiloId) ->
       ok;
     eat   ->
       eat(PhiloId),
-      WaiterPid ! {eaten, self()}
+      WaiterPid ! {eaten, self()};
+    close ->
+      io:fwrite("Philo " ++ integer_to_list(PhiloId) ++ " leaves~n"),
+      exit(normal)
   end.
 
 eat(PhiloId) ->
