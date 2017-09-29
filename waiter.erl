@@ -15,9 +15,8 @@ loop(ForkDict, PhiloDict) ->
   {UpdForkDict, UpdPhiloDict} =
     receive
       {intro, PhiloPid} ->
-        NewPhiloDict = seat_philo(PhiloPid, PhiloDict),
-        PhiloPid ! seated,
-        io:fwrite("PhiloDict: ~p~n", [NewPhiloDict]),
+        {NewPhiloDict, PhiloId} = seat_philo(PhiloPid, PhiloDict),
+        PhiloPid ! {seated, PhiloId},
         {ForkDict, NewPhiloDict};
       {hungry, PhiloPid} ->
         PhiloId = proplists:get_value(PhiloPid, PhiloDict),
@@ -35,7 +34,7 @@ loop(ForkDict, PhiloDict) ->
             {ForkDict, PhiloDict}
         end;
       {eaten, PhiloPid} ->
-        NewForkDict = put_down_forks(PhiloPid, ForkDict),
+        NewForkDict = put_down_forks(PhiloPid, ForkDict, PhiloDict),
         {NewForkDict, PhiloDict}
     end,
     loop(UpdForkDict, UpdPhiloDict).
@@ -45,7 +44,7 @@ seat_philo(PhiloPid, PhiloDict) ->
   NewPhiloDict = lists:append(PhiloDict, [{PhiloPid, CurSeat}]),
   NextSeat = CurSeat + 1,
   ref_add(?CUR_SEAT, NextSeat),
-  NewPhiloDict.
+  {NewPhiloDict, CurSeat}.
 
 keep_thinking(PhiloPid) ->
   PhiloPid ! think.
@@ -56,8 +55,8 @@ pick_up_forks(PhiloPid, LeftForkId, RightForkId, ForkDict) ->
   NewForkDict = lists:keyreplace(RightForkId, 1, TmpForkDict, {RightForkId, used}),
   NewForkDict.
 
-put_down_forks(PhiloPid, ForkDict) ->
-  PhiloId = dict:fecth(PhiloPid),
+put_down_forks(PhiloPid, ForkDict, PhiloDict) ->
+  PhiloId = proplists:get_value(PhiloPid, PhiloDict),
   LeftForkId  = PhiloId,
   RightForkId = (LeftForkId + 1) rem ?NUM_FORKS,
   TmpForkDict = lists:keyreplace(LeftForkId, 1, ForkDict, {LeftForkId, free}),
