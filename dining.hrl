@@ -1,0 +1,5 @@
+-define(DIN_REF, '_._din').
+-define(NUM_FORKS, 5).
+-define(CUR_SEAT, 0).
+-define(THINK_FACTOR, 1000).
+-define(EATING_TIME, 1000).
