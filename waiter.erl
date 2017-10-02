@@ -1,12 +1,12 @@
 -module(waiter).
--export([start/2]).
+-export([start/1]).
 
 -include("dining.hrl").
 
-start(NumForks, DiningPid) ->
+start(DiningPid) ->
   ref_start(),
   ref_add(?CUR_SEAT, 0),
-  ForkDict = [{Id, free} || Id <- lists:seq(0, NumForks - 1)],
+  ForkDict = [{Id, free} || Id <- lists:seq(0, ?NUM_FORKS - 1)],
   PhiloDict = [],
   DiningPid ! table_prepared,
   loop(ForkDict, PhiloDict).

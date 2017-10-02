@@ -32,7 +32,8 @@ hungry(WaiterPid, PhiloId, NumEaten) ->
       WaiterPid ! {eaten, self()},
       1;
     close ->
-      io:fwrite("Philo " ++ integer_to_list(PhiloId) ++ " has eaten ~p times~n", [NumEaten]),
+      %io:fwrite("Philo " ++ integer_to_list(PhiloId) ++ " has eaten ~p times~n", [NumEaten]),
+      io:fwrite(integer_to_list(PhiloId) ++ " " ++ "~p~n", [NumEaten]),
       exit(normal)
   end.
 
