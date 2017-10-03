@@ -1,0 +1,19 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(ggplot2)
+setwd("/Users/baha/Dropbox/dining-philos/")
+full = read.table("full_avg.txt",
+                  sep=" ",
+                  col.names=c("philo", "type", "times"),
+                  fill=FALSE,
+                  strip.white=TRUE)
+full_plot <- ggplot(data=full, aes(x=philo, y=times, fill=type)) +
+        geom_bar(stat="identity", position=position_dodge(),                 colour="black") +
+        labs(x="Philosopher", y="Avg. times eaten", fill="Version")
+full_plot
+```
+
