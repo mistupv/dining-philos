@@ -1,21 +1,21 @@
-if [ $# -ne 1 ]; then
-  echo "Usage: $0 <input_file>"
+if [ $# -ne 2 ]; then
+  echo "Usage: $0 <input_file> <label>"
   exit
 fi
 
-cat $1 | awk 'BEGIN{
+cat $1 | awk -v label=$2 'BEGIN{
 }
 {
-  if ($2 in sum) {
-    sum[$2] += $5;
-    times[$2] += 1;
+  if ($1 in sum) {
+    sum[$1] += $2;
+    times[$1] += 1;
   }
   else {
-    sum[$2] = $5;
-    times[$2] = 1;
+    sum[$1] = $2;
+    times[$1] = 1;
   }
 }
 END{
   for (x in sum)
-    printf("%d %f\n", x, sum[x]/times[x]);
+    printf("%d %s %.3f\n", x, label, sum[x]/times[x]);
 }'
