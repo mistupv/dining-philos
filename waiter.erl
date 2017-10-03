@@ -5,8 +5,8 @@
 
 start(DiningPid) ->
   ref_start(),
-  ref_add(?CUR_SEAT, 0),
-  ForkDict = [{Id, free} || Id <- lists:seq(0, ?NUM_FORKS - 1)],
+  ref_add(?CUR_SEAT, 1),
+  ForkDict = [{Id, free} || Id <- lists:seq(1, ?NUM_FORKS)],
   PhiloDict = [],
   DiningPid ! table_prepared,
   loop(ForkDict, PhiloDict).
@@ -22,7 +22,7 @@ loop(ForkDict, PhiloDict) ->
       {hungry, PhiloPid} ->
         PhiloId = proplists:get_value(PhiloPid, PhiloDict),
         LeftForkId = PhiloId,
-        RightForkId =  (LeftForkId + 1) rem ?NUM_FORKS,
+        RightForkId =  1 + (LeftForkId rem ?NUM_FORKS),
         LeftForkState = proplists:get_value(LeftForkId, ForkDict),
         RightForkState = proplists:get_value(RightForkId, ForkDict),
         case {LeftForkState, RightForkState} of
@@ -59,7 +59,8 @@ pick_up_forks(PhiloPid, LeftForkId, RightForkId, ForkDict) ->
 put_down_forks(PhiloPid, ForkDict, PhiloDict) ->
   PhiloId = proplists:get_value(PhiloPid, PhiloDict),
   LeftForkId  = PhiloId,
-  RightForkId = (LeftForkId + 1) rem ?NUM_FORKS,
+  RightForkId = 1 + (LeftForkId rem ?NUM_FORKS), % Correct version
+  % RightForkId = 1 + (?NUM_FORKS rem LeftForkId), % Bugged version
   TmpForkDict = lists:keyreplace(LeftForkId, 1, ForkDict, {LeftForkId, free}),
   NewForkDict = lists:keyreplace(RightForkId, 1, TmpForkDict, {RightForkId, free}),
   NewForkDict.
