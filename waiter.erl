@@ -6,39 +6,38 @@
 start(DiningPid) ->
   ref_start(),
   ref_add(?CUR_SEAT, 1),
-  ForkDict = [{Id, free} || Id <- lists:seq(1, ?NUM_FORKS)],
+  Self = self(),
+  ForkDict = [{Id, spawn(fork, start, [Self])} || Id <- lists:seq(1, ?NUM_FORKS)],
+  %[receive fork_set -> ok end || lists:seq(1, ?NUM_FORKS)],
   PhiloDict = [],
   DiningPid ! table_prepared,
   loop(ForkDict, PhiloDict).
 
 loop(ForkDict, PhiloDict) ->
   check_close(PhiloDict),
-  {UpdForkDict, UpdPhiloDict} =
+  UpdPhiloDict =
     receive
       {intro, PhiloPid} ->
         {NewPhiloDict, PhiloId} = seat_philo(PhiloPid, PhiloDict),
         PhiloPid ! {seated, PhiloId},
-        {ForkDict, NewPhiloDict};
+        NewPhiloDict;
       {hungry, PhiloPid} ->
         PhiloId = proplists:get_value(PhiloPid, PhiloDict),
         LeftForkId = PhiloId,
         RightForkId =  1 + (LeftForkId rem ?NUM_FORKS),
-        LeftForkState = proplists:get_value(LeftForkId, ForkDict),
-        RightForkState = proplists:get_value(RightForkId, ForkDict),
+        LeftPid = proplists:get_value(LeftForkId, ForkDict),
+        RightPid = proplists:get_value(RightForkId, ForkDict),
+        LeftForkState = ask_state(LeftPid),
+        RightForkState = ask_state(RightPid),
         case {LeftForkState, RightForkState} of
           {free, free} ->
-            NewForkDict =
-              pick_up_forks(PhiloPid, LeftForkId, RightForkId, ForkDict),
-            {NewForkDict, PhiloDict};
+            PhiloPid ! {eat, LeftPid, RightPid};
           _ ->
-            keep_thinking(PhiloPid),
-            {ForkDict, PhiloDict}
-        end;
-      {eaten, PhiloPid} ->
-        NewForkDict = put_down_forks(PhiloPid, ForkDict, PhiloDict),
-        {NewForkDict, PhiloDict}
+            PhiloPid ! think
+        end,
+        PhiloDict
     end,
-    loop(UpdForkDict, UpdPhiloDict).
+    loop(ForkDict, UpdPhiloDict).
 
 seat_philo(PhiloPid, PhiloDict) ->
   CurSeat = ref_lookup(?CUR_SEAT),
@@ -47,23 +46,20 @@ seat_philo(PhiloPid, PhiloDict) ->
   ref_add(?CUR_SEAT, NextSeat),
   {NewPhiloDict, CurSeat}.
 
-keep_thinking(PhiloPid) ->
-  PhiloPid ! think.
+% put_down_forks(PhiloPid, ForkDict, PhiloDict) ->
+%   PhiloId = proplists:get_value(PhiloPid, PhiloDict),
+%   LeftForkId  = PhiloId,
+%   RightForkId = 1 + (LeftForkId rem ?NUM_FORKS), % Correct version
+%   % RightForkId = 1 + (?NUM_FORKS rem LeftForkId), % Bugged version
+%   TmpForkDict = lists:keyreplace(LeftForkId, 1, ForkDict, {LeftForkId, free}),
+%   NewForkDict = lists:keyreplace(RightForkId, 1, TmpForkDict, {RightForkId, free}),
+%   NewForkDict.
 
-pick_up_forks(PhiloPid, LeftForkId, RightForkId, ForkDict) ->
-  PhiloPid ! eat,
-  TmpForkDict = lists:keyreplace(LeftForkId, 1, ForkDict, {LeftForkId, used}),
-  NewForkDict = lists:keyreplace(RightForkId, 1, TmpForkDict, {RightForkId, used}),
-  NewForkDict.
-
-put_down_forks(PhiloPid, ForkDict, PhiloDict) ->
-  PhiloId = proplists:get_value(PhiloPid, PhiloDict),
-  LeftForkId  = PhiloId,
-  RightForkId = 1 + (LeftForkId rem ?NUM_FORKS), % Correct version
-  % RightForkId = 1 + (?NUM_FORKS rem LeftForkId), % Bugged version
-  TmpForkDict = lists:keyreplace(LeftForkId, 1, ForkDict, {LeftForkId, free}),
-  NewForkDict = lists:keyreplace(RightForkId, 1, TmpForkDict, {RightForkId, free}),
-  NewForkDict.
+ask_state(Pid) ->
+  Pid ! {get_state, self()},
+  receive
+    State -> State
+  end.
 
 check_close(PhiloDict) ->
   receive
