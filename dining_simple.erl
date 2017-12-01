@@ -99,9 +99,11 @@ request_until_eaten(WaiterPid, PhiloId) ->
 fork(State) ->
   receive
     {get_state, WaiterPid} ->
-      WaiterPid ! State,
+      WaiterPid ! {state, State, self()}, % Correct version
+      % WaiterPid ! State,                % Bugged version
       fork(State);
     {set_state, NewState, WaiterPid} ->
-      WaiterPid ! been_set,
+      WaiterPid ! {been_set, self()}, % Correct version
+      % WaiterPid ! been_set,         % Bugged version
       fork(NewState)
   end. 
