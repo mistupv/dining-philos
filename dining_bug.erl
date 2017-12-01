@@ -1,4 +1,4 @@
--module(dining).
+-module(dining_bug).
 -export([main/0, waiter/1, fork/1, philo/2]).
 
 main() ->
@@ -30,8 +30,8 @@ waiter_1(ForkDict, PhiloDict) ->
       {eaten, PhiloPid} ->
         PhiloId = proplists:get_value(PhiloPid, PhiloDict),
         LeftForkId = PhiloId,
-        RightForkId =  1 + (LeftForkId rem 5),    % Correct version
-        % RightForkId =  1 + (5 rem LeftForkId),  % Bugged version
+        % RightForkId =  1 + (LeftForkId rem 5), % Correct version
+        RightForkId =  1 + (5 rem LeftForkId),   % Bugged version
         LeftPid = proplists:get_value(LeftForkId, ForkDict),
         RightPid = proplists:get_value(RightForkId, ForkDict),
         set_state(LeftPid, free),
